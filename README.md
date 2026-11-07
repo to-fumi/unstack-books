@@ -21,12 +21,13 @@ open http://localhost:8000/docs
 | `make db-current` | 現在の DB リビジョン |
 | `make db-history` | マイグレーション履歴 |
 | `make db-check` | モデルと DB の差分チェック |
-| `make db-revision m="..."` | マイグレーション自動生成 |
+| `make db-revision m="..."` | マイグレーション自動生成（`0003_xxx.py` のように連番で採番） |
 | `make db-upgrade [rev=head]` | 適用 |
 | `make db-downgrade [rev=-1]` | 取り消し (`rev=base` で全部) |
 | `make lint` / `make format` | ruff |
 
 Alembic はデフォルトで api コンテナ内で実行。ホストで実行するなら `RUN=local` を付ける。
+ただし `db-revision` はファイルを生成するため常にホストで実行する。
 環境は `ENV=local`（既定）で `local/compose.yaml` を使用。将来 `cloud/` を追加したら `ENV=cloud`。
 
 ## ディレクトリ構成

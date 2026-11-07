@@ -1,12 +1,6 @@
-"""アプリケーション設定。
-
-環境変数（および .env）をここで一括して読み込む。
-他のモジュールは `get_settings()` 経由で設定値を参照すること。
-"""
-
 from functools import lru_cache
 
-from pydantic import Field, PostgresDsn, computed_field
+from pydantic import Field, PostgresDsn, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,28 +11,28 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # --- アプリケーション ---
+    # 環境ごとに値が変わるものはデフォルトを持たせず、未設定なら起動時にエラーにする。
+    # デフォルトがあるのは、環境に依存しないもの・入れ忘れても安全側に倒れるものだけ。
+
     app_name: str = "unstack-books"
-    app_env: str = Field(default="local", description="local / dev / prod など")
+    app_env: str = Field(description="local / dev / prod など")
     debug: bool = False
 
-    # --- データベース (PostgreSQL) ---
-    postgres_user: str = "postgres"
-    postgres_password: str = "postgres"
-    postgres_db: str = "unstack_books"
-    postgres_host: str = "localhost"
-    postgres_port: int = 5432
+    postgres_user: str
+    postgres_password: SecretStr  # repr / ログでは伏せる
+    postgres_db: str
+    postgres_host: str
+    postgres_port: int
     db_echo: bool = False
 
-    @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:
-        """SQLAlchemy (asyncpg) 用の接続 URL。"""
+        # パスワードを含むのでログに出さないこと
         return str(
             PostgresDsn.build(
                 scheme="postgresql+asyncpg",
                 username=self.postgres_user,
-                password=self.postgres_password,
+                password=self.postgres_password.get_secret_value(),
                 host=self.postgres_host,
                 port=self.postgres_port,
                 path=self.postgres_db,

@@ -1,9 +1,3 @@
-"""Book エンティティ（集約ルート）。
-
-ビジネスルール（ステータス遷移・ページ数の整合性など）はここに閉じ込める。
-SQLAlchemy などの永続化技術には一切依存しない。
-"""
-
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from uuid import UUID, uuid7
@@ -33,7 +27,6 @@ class Book:
     def __post_init__(self) -> None:
         self._validate()
 
-    # ---- ファクトリ ----
     @classmethod
     def register(
         cls,
@@ -45,7 +38,6 @@ class Book:
         purchased_at: date | None = None,
         memo: str | None = None,
     ) -> Book:
-        """新しく本を積む（登録する）。"""
         return cls(
             title=title,
             author=author,
@@ -55,7 +47,6 @@ class Book:
             memo=memo,
         )
 
-    # ---- 振る舞い ----
     def update_info(
         self,
         *,
@@ -90,7 +81,6 @@ class Book:
         self._touch()
 
     def record_progress(self, current_page: int) -> None:
-        """読んだページまで進捗を記録し、ステータスを自動で更新する。"""
         self.current_page = current_page
         self._validate()
         if self.total_pages is not None and current_page >= self.total_pages:
@@ -101,7 +91,6 @@ class Book:
             self.status = ReadingStatus.UNREAD
         self._touch()
 
-    # ---- 内部 ----
     def _validate(self) -> None:
         if not self.title or not self.title.strip():
             raise DomainValidationError("title must not be empty")

@@ -1,5 +1,3 @@
-"""DB クライアント（engine / session の生成）。"""
-
 from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
@@ -23,6 +21,5 @@ SessionFactory = async_sessionmaker(engine, expire_on_commit=False, autoflush=Fa
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
-    """リクエスト単位で 1 つのセッションを払い出す。"""
     async with SessionFactory() as session:
         yield session

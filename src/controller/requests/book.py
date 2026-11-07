@@ -1,5 +1,3 @@
-"""Book API のリクエストスキーマ（入力バリデーション）。"""
-
 from datetime import date
 
 from pydantic import BaseModel, Field
@@ -21,8 +19,6 @@ class CreateBookRequest(BaseModel):
 
 
 class UpdateBookRequest(BaseModel):
-    """部分更新 (PATCH)。送られた項目だけ更新する。"""
-
     title: str | None = Field(default=None, min_length=1, max_length=255)
     author: str | None = Field(default=None, max_length=255)
     isbn: str | None = None

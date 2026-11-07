@@ -1,8 +1,3 @@
-"""レイヤー間でデータを受け渡すための DTO。
-
-controller → service の入力、service → controller の出力に使う。
-"""
-
 from dataclasses import dataclass
 from datetime import date, datetime
 from uuid import UUID
@@ -23,8 +18,6 @@ class CreateBookInput:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class UpdateBookInput:
-    """部分更新用。None の項目は更新しない。"""
-
     title: str | None = None
     author: str | None = None
     isbn: str | None = None

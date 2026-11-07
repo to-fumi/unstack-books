@@ -1,20 +1,18 @@
-"""Book リポジトリのインターフェース（Protocol）。
-
-service 層はこの Protocol にのみ依存し、実装（external 層）を知らない。
-= 依存性逆転の原則 (DIP)
-"""
-
 from typing import Protocol
 from uuid import UUID
 
 from domain.models import Book
-from domain.value_objects import ReadingStatus
+from domain.value_objects import Isbn, ReadingStatus
 
 
 class BookRepository(Protocol):
+    """add / update は ISBN が重複した場合 BookAlreadyExistsError を送出する。"""
+
     async def add(self, book: Book) -> None: ...
 
     async def get(self, book_id: UUID) -> Book | None: ...
+
+    async def find_by_isbn(self, isbn: Isbn) -> Book | None: ...
 
     async def find_all(
         self,

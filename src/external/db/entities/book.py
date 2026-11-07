@@ -1,5 +1,3 @@
-"""books テーブルの ORM エンティティ。ドメインモデルとは別物として扱う。"""
-
 from datetime import date
 from uuid import UUID
 
@@ -20,7 +18,8 @@ class BookEntity(TimestampMixin, Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     author: Mapped[str | None] = mapped_column(String(255))
-    isbn: Mapped[str | None] = mapped_column(String(13), index=True)
+    # ISBN-13 に正規化して保存。NULL（ISBN なし）は重複可
+    isbn: Mapped[str | None] = mapped_column(String(13), index=True, unique=True)
     total_pages: Mapped[int | None] = mapped_column(Integer)
     current_page: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     status: Mapped[ReadingStatus] = mapped_column(
