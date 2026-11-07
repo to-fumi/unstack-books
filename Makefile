@@ -3,13 +3,16 @@
 ENV ?= local
 COMPOSE := docker compose -f $(ENV)/compose.yaml --env-file .env
 
-# Alembic はデフォルトで api コンテナ内で実行する。
+# Alembic はデフォルトで api コンテナ内で実行する（db-revision は除く）。
 # ホストから実行したい場合は RUN=local を付ける（例: make db-current RUN=local）
 ifeq ($(RUN),local)
   ALEMBIC := uv run alembic
 else
   ALEMBIC := $(COMPOSE) exec api alembic
 endif
+
+# 次のマイグレーションの連番（既存の最大番号 + 1、4 桁ゼロ埋め）
+NEXT_REV = $(shell ls migrations/versions | sed -nE 's/^([0-9]{4})_.*\.py$$/\1/p' | sort | awk '{n=$$1} END {printf "%04d", n+1}')
 
 .PHONY: help
 help: ## コマンド一覧
@@ -54,9 +57,10 @@ db-check: ## モデルと DB に差分がないか確認
 	$(ALEMBIC) check
 
 .PHONY: db-revision
-db-revision: ## マイグレーション自動生成  例: make db-revision m="add xxx"
+# ファイルを生成するので常にホストで実行する（Lima のマウントはコンテナから書き込めないため）
+db-revision: ## マイグレーション自動生成（連番で採番）  例: make db-revision m="add xxx"
 	@test -n "$(m)" || (echo 'メッセージを指定してください: make db-revision m="..."' && exit 1)
-	$(ALEMBIC) revision --autogenerate -m "$(m)"
+	uv run alembic revision --autogenerate --rev-id $(NEXT_REV) -m "$(m)"
 
 .PHONY: db-upgrade
 db-upgrade: ## 適用（既定: head）  例: make db-upgrade rev=+1

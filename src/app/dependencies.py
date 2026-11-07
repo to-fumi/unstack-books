@@ -1,9 +1,3 @@
-"""依存性の組み立て（Composition Root）。
-
-ここでのみ「domain の Protocol」と「external の実装」を結びつける。
-controller はここで定義された依存関数を Depends() で受け取る。
-"""
-
 from typing import Annotated
 
 from fastapi import Depends

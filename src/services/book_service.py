@@ -1,9 +1,3 @@
-"""Book に関するユースケース（アプリケーションサービス）。
-
-domain の Protocol (BookRepository) にのみ依存し、
-具体的な DB 実装は DI（app/dependencies.py）で注入される。
-"""
-
 from uuid import UUID
 
 from domain.dto import (
@@ -13,7 +7,7 @@ from domain.dto import (
     CreateBookInput,
     UpdateBookInput,
 )
-from domain.exceptions import BookNotFoundError
+from domain.exceptions import BookAlreadyExistsError, BookNotFoundError
 from domain.models import Book
 from domain.repositories import BookRepository
 
@@ -31,6 +25,7 @@ class BookService:
             purchased_at=data.purchased_at,
             memo=data.memo,
         )
+        await self._ensure_isbn_available(book)
         await self._repository.add(book)
         return BookOutput.from_model(book)
 
@@ -46,6 +41,7 @@ class BookService:
 
     async def update(self, book_id: UUID, data: UpdateBookInput) -> BookOutput:
         book = await self._get_or_raise(book_id)
+        original_isbn = book.isbn
         book.update_info(
             title=data.title,
             author=data.author,
@@ -59,12 +55,22 @@ class BookService:
             book.record_progress(data.current_page)
         if data.status is not None:
             book.change_status(data.status)
+        if book.isbn != original_isbn:
+            await self._ensure_isbn_available(book)
         await self._repository.update(book)
         return BookOutput.from_model(book)
 
     async def delete(self, book_id: UUID) -> None:
         await self._get_or_raise(book_id)
         await self._repository.delete(book_id)
+
+    async def _ensure_isbn_available(self, book: Book) -> None:
+        # 同時リクエストのすり抜けは DB のユニーク制約で防ぐ
+        if book.isbn is None:
+            return
+        existing = await self._repository.find_by_isbn(book.isbn)
+        if existing is not None and existing.id != book.id:
+            raise BookAlreadyExistsError(book.isbn, existing_book_id=existing.id)
 
     async def _get_or_raise(self, book_id: UUID) -> Book:
         book = await self._repository.get(book_id)
