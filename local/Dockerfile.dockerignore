@@ -1,0 +1,7 @@
+.venv
+.git
+.husky
+node_modules
+**/__pycache__
+.ruff_cache
+.env
