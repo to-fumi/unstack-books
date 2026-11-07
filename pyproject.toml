@@ -1,0 +1,46 @@
+[project]
+name = "unstack-books"
+version = "0.1.0"
+description = "積読解消アプリ"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.20.1",
+    "asyncpg>=0.32.0",
+    "fastapi[standard]>=0.162.1",
+    "pydantic-settings>=2.16.2",
+    "sqlalchemy[asyncio]>=2.1.8",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.4",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "N",   # pep8-naming
+    "RUF", # ruff-specific
+]
+ignore = [
+    "B008", # FastAPI の Depends() をデフォルト引数で使うため
+    "RUF001", "RUF002", "RUF003", # 日本語の全角文字を許容
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "controller", "services", "domain", "external"]
+
+[tool.ruff.format]
+quote-style = "double"

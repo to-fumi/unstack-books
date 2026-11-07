@@ -218,3 +218,29 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# ===== Project specific =====
+# 環境変数（テンプレートの .env.example だけはコミットする）
+.env.*
+!.env.example
+
+# Node.js (husky / lint-staged)
+node_modules/
+npm-debug.log*
+.npm/
+.husky/_/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+
+# Logs
+*.log
